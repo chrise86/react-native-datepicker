@@ -44,6 +44,7 @@ class DatePicker extends Component {
     this.onDatetimePicked = this.onDatetimePicked.bind(this);
     this.onDatetimeTimePicked = this.onDatetimeTimePicked.bind(this);
     this.setModalVisible = this.setModalVisible.bind(this);
+    this.onPressClear = this.onPressClear.bind(this);
   }
 
   componentWillMount() {
@@ -290,27 +291,31 @@ class DatePicker extends Component {
     }
   }
 
+  onPressClear() {
+    this.setState({
+      date: ''
+    });
+    if (typeof this.props.onDateChange === 'function') {
+      this.props.onDateChange(null, null);
+    }
+  }
+
   _renderIcon() {
     const {
-      showIcon,
       iconSource,
       iconComponent,
       customStyles
     } = this.props;
 
-    if (showIcon) {
-      if (!!iconComponent) {
-        return iconComponent;
-      }
-      return (
-        <Image
-          style={[Style.dateIcon, customStyles.dateIcon]}
-          source={iconSource}
-        />
-      );
+    if (!!iconComponent) {
+      return iconComponent;
     }
-
-    return null;
+    return (
+      <Image
+        style={[Style.dateIcon, customStyles.dateIcon]}
+        source={iconSource}
+      />
+    );
   }
 
   render() {
@@ -324,7 +329,10 @@ class DatePicker extends Component {
       minuteInterval,
       timeZoneOffsetInMinutes,
       cancelBtnText,
-      confirmBtnText
+      confirmBtnText,
+      showIcon,
+      date,
+      clearComponent
     } = this.props;
 
     const dateInputStyle = [
@@ -334,76 +342,85 @@ class DatePicker extends Component {
     ];
 
     return (
-      <TouchableHighlight
-        style={[Style.dateTouch, style]}
-        underlayColor={'transparent'}
-        onPress={this.onPressDate}
-      >
-        <View style={[Style.dateTouchBody, customStyles.dateTouchBody]}>
-          <View style={dateInputStyle}>
-            {this.getTitleElement()}
-          </View>
-          {this._renderIcon()}
-          {Platform.OS === 'ios' && <Modal
-            transparent={true}
-            animationType="none"
-            visible={this.state.modalVisible}
-            supportedOrientations={SUPPORTED_ORIENTATIONS}
-            onRequestClose={() => {this.setModalVisible(false);}}
-          >
-            <View
-              style={{flex: 1}}
+      <View style={[Style.dateTouch, style]}>
+        <TouchableHighlight
+          underlayColor={'transparent'}
+          onPress={this.onPressDate}
+          style={{flex: 1}}
+        >
+          <View style={[Style.dateTouchBody, customStyles.dateTouchBody]}>
+            {showIcon === 'left' && this._renderIcon()}
+            <View style={dateInputStyle}>
+              {this.getTitleElement()}
+            </View>
+            {showIcon === 'right' && this._renderIcon()}
+            {Platform.OS === 'ios' && <Modal
+              transparent={true}
+              animationType="none"
+              visible={this.state.modalVisible}
+              supportedOrientations={SUPPORTED_ORIENTATIONS}
+              onRequestClose={() => {this.setModalVisible(false);}}
             >
-              <TouchableHighlight
-                style={Style.datePickerMask}
-                activeOpacity={1}
-                underlayColor={'#00000077'}
-                onPress={this.onPressMask}
+              <View
+                style={{flex: 1}}
               >
                 <TouchableHighlight
-                  underlayColor={'#fff'}
-                  style={{flex: 1}}
+                  style={Style.datePickerMask}
+                  activeOpacity={1}
+                  underlayColor={'#00000077'}
+                  onPress={this.onPressMask}
                 >
-                  <Animated.View
-                    style={[Style.datePickerCon, {height: this.state.animatedHeight}, customStyles.datePickerCon]}
+                  <TouchableHighlight
+                    underlayColor={'#fff'}
+                    style={{flex: 1}}
                   >
-                    <View pointerEvents={this.state.allowPointerEvents ? 'auto' : 'none'}>
-                      <DatePickerIOS
-                        date={this.state.date}
-                        mode={mode}
-                        minimumDate={minDate && this.getDate(minDate)}
-                        maximumDate={maxDate && this.getDate(maxDate)}
-                        onDateChange={this.onDateChange}
-                        minuteInterval={minuteInterval}
-                        timeZoneOffsetInMinutes={timeZoneOffsetInMinutes}
-                        style={[Style.datePicker, customStyles.datePicker]}
-                      />
-                    </View>
-                    <TouchableHighlight
-                      underlayColor={'transparent'}
-                      onPress={this.onPressCancel}
-                      style={[Style.btnText, Style.btnCancel, customStyles.btnCancel]}
+                    <Animated.View
+                      style={[Style.datePickerCon, {height: this.state.animatedHeight}, customStyles.datePickerCon]}
                     >
-                      <Text
-                        style={[Style.btnTextText, Style.btnTextCancel, customStyles.btnTextCancel]}
+                      <View pointerEvents={this.state.allowPointerEvents ? 'auto' : 'none'}>
+                        <DatePickerIOS
+                          date={this.state.date}
+                          mode={mode}
+                          minimumDate={minDate && this.getDate(minDate)}
+                          maximumDate={maxDate && this.getDate(maxDate)}
+                          onDateChange={this.onDateChange}
+                          minuteInterval={minuteInterval}
+                          timeZoneOffsetInMinutes={timeZoneOffsetInMinutes}
+                          style={[Style.datePicker, customStyles.datePicker]}
+                        />
+                      </View>
+                      <TouchableHighlight
+                        underlayColor={'transparent'}
+                        onPress={this.onPressCancel}
+                        style={[Style.btnText, Style.btnCancel, customStyles.btnCancel]}
                       >
-                        {cancelBtnText}
-                      </Text>
-                    </TouchableHighlight>
-                    <TouchableHighlight
-                      underlayColor={'transparent'}
-                      onPress={this.onPressConfirm}
-                      style={[Style.btnText, Style.btnConfirm, customStyles.btnConfirm]}
-                    >
-                      <Text style={[Style.btnTextText, customStyles.btnTextConfirm]}>{confirmBtnText}</Text>
-                    </TouchableHighlight>
-                  </Animated.View>
+                        <Text
+                          style={[Style.btnTextText, Style.btnTextCancel, customStyles.btnTextCancel]}
+                        >
+                          {cancelBtnText}
+                        </Text>
+                      </TouchableHighlight>
+                      <TouchableHighlight
+                        underlayColor={'transparent'}
+                        onPress={this.onPressConfirm}
+                        style={[Style.btnText, Style.btnConfirm, customStyles.btnConfirm]}
+                      >
+                        <Text style={[Style.btnTextText, customStyles.btnTextConfirm]}>{confirmBtnText}</Text>
+                      </TouchableHighlight>
+                    </Animated.View>
+                  </TouchableHighlight>
                 </TouchableHighlight>
-              </TouchableHighlight>
-            </View>
-          </Modal>}
-        </View>
-      </TouchableHighlight>
+              </View>
+            </Modal>}
+          </View>
+        </TouchableHighlight>
+        {!!date && <TouchableHighlight
+          underlayColor={'transparent'}
+          onPress={this.onPressClear}
+        >
+          {clearComponent}
+        </TouchableHighlight>}
+      </View>
     );
   }
 }
@@ -423,7 +440,7 @@ DatePicker.defaultProps = {
   customStyles: {},
 
   // whether or not show the icon
-  showIcon: true,
+  showIcon: 'right',
   disabled: false,
   placeholder: '',
   modalOnResponderTerminationRequest: e => true
@@ -443,7 +460,7 @@ DatePicker.propTypes = {
   iconSource: React.PropTypes.oneOfType([React.PropTypes.number, React.PropTypes.object]),
   iconComponent: React.PropTypes.element,
   customStyles: React.PropTypes.object,
-  showIcon: React.PropTypes.bool,
+  showIcon: React.PropTypes.string,
   disabled: React.PropTypes.bool,
   onDateChange: React.PropTypes.func,
   onOpenModal: React.PropTypes.func,

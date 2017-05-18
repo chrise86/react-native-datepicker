@@ -5,6 +5,7 @@ let style = StyleSheet.create({
     width: 142
   },
   dateTouchBody: {
+    flex: 1,
     flexDirection: 'row',
     height: 40,
     alignItems: 'center',
